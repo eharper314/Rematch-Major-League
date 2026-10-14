@@ -1,7 +1,7 @@
 {
   "name": "rml-bot",
   "version": "1.0.0",
-  "description": "",
+  "description": "The official Discord bot for REMATCH Major League.",
   "main": "src/index.js",
   "scripts": {
     "start": "node --env-file=.env src/index.js"
