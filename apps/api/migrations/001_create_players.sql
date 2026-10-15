@@ -17,4 +17,8 @@ CREATE TABLE public.players (
 CREATE UNIQUE INDEX players_ign_case_insensitive_unique
     ON public.players (lower(in_game_name));
 
+GRANT SELECT, INSERT, UPDATE
+ON TABLE public.players
+TO rml_api;
+
 COMMIT;
