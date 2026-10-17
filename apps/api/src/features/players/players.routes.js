@@ -1,5 +1,6 @@
 import {Router} from "express";
 import {createPlayer} from "./players.repository.js";
+import {authenticateBot} from "../../middleware/authenticate-bot.js";
 
 export const playersRouter = Router();
 
@@ -7,7 +8,7 @@ playersRouter.get("/", (request, response) => {
   response.json({ message: "Player routes are connected." });
 });
 
-playersRouter.post("/", async (request, response) => {
+playersRouter.post("/", authenticateBot, async (request, response) => {
   const {discordUserId, inGameName} = request.body ?? {};
 
   // Error Handling

@@ -10,14 +10,9 @@ import {
 
 
 const adminRoleId = process.env.ADMIN_ROLE_ID;
-const registeredRoleId = process.env.REGISTERED_ROLE_ID;
 
 if (!adminRoleId) {
     throw new Error("ADMIN_ROLE_ID is required.");
-}
-
-if (!registeredRoleId) {
-    throw new Error("REGISTERED_ROLE_ID is required.");
 }
 
 export const data = new SlashCommandBuilder()

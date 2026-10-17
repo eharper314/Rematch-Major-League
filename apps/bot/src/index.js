@@ -1,7 +1,7 @@
 import {Client, Events, GatewayIntentBits} from "discord.js";
 import {loadCommands} from "./load-commands.js";
 import {registerCommands} from "./register-commands.js";
-import {handleRegistrationButtons} from "./interactions/registration.js";
+import {handleRegistrationButtons, handleRegistrationModalSubmit} from "./interactions/registration.js";
 
 
 const botToken = process.env.DISCORD_BOT_TOKEN;
@@ -31,6 +31,13 @@ bot.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isButton()) {
         if (interaction.customId.startsWith("registration:")) {
             await handleRegistrationButtons(interaction);
+            return;
+        }
+    }
+
+    if (interaction.isModalSubmit()) {
+        if(interaction.customId.startsWith("registration:")) {
+            await handleRegistrationModalSubmit(interaction);
             return;
         }
     }
