@@ -71,12 +71,12 @@ export async function execute(interaction) {
 
     const buttons = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-            .setCustomId("register:register")
+            .setCustomId("registration:register")
             .setLabel("Register")
             .setStyle(ButtonStyle.Success),
         
         new ButtonBuilder()
-            .setCustomId("register:updateIGN")
+            .setCustomId("registration:updateIGN")
             .setLabel("Update IGN")
             .setStyle(ButtonStyle.Secondary)
     );
