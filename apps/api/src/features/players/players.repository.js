@@ -49,7 +49,9 @@ export async function staffUpdateIgnOverride(staffMember, discordUserId, inGameN
         const findId = await client.query(findPlayer, [discordUserId])
 
         if (findId.rows[0] === undefined) {
-            throw new Error("Player does not exist.");
+            const error = new Error("Player does not exist.");
+            error.code = "NONEXISTENT_PLAYER";
+            throw error;
         }
 
         const targetId = findId.rows[0].player_id
