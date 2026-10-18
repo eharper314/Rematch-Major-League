@@ -37,3 +37,66 @@ export async function findPlayerByDiscordId(discordUserId) {
 
     return result.rows[0];
 }
+
+export async function staffUpdateIgnOverride(staffMember, discordUserId, inGameName, reason) {
+    const client = await pool.connect()
+
+    try {
+        await client.query(`BEGIN`)
+        const findPlayer = `SELECT p.player_id, p.discord_user_id, p.in_game_name, p.ign_updated_at FROM players p WHERE discord_user_id = $1 FOR NO KEY UPDATE`
+
+
+        const findId = await client.query(findPlayer, [discordUserId])
+
+        if (findId.rows[0] === undefined) {
+            throw new Error("Player does not exist.");
+        }
+
+        const targetId = findId.rows[0].player_id
+        const oldIgn = findId.rows[0].in_game_name
+
+        const updateIgn = `UPDATE public.players
+        SET in_game_name = $2, ign_updated_at = CURRENT_TIMESTAMP
+        WHERE discord_user_id = $1
+        AND in_game_name <> $2
+        RETURNING player_id, discord_user_id, in_game_name, ign_updated_at`
+
+        if (oldIgn === inGameName) {
+            await client.query(`ROLLBACK`);
+            return {
+                player: findId.rows[0],
+                audit: null
+            };
+        }
+
+        const finalUpdateIgn = await client.query(updateIgn, [discordUserId, inGameName])
+
+        const addAuditLog = `INSERT INTO audit_logs (action, actor_discord_user_id, 
+        target_type, target_id, changes, reason)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING audit_id, action, actor_discord_user_id, target_id, changes, reason, created_at`
+
+        const finalAuditLog = await client.query(addAuditLog, [
+            "player.ign_override",
+            staffMember,
+            "player",
+            targetId,
+            {
+                "before": oldIgn,
+                "after": inGameName,
+            },
+            reason
+        ])
+
+        await client.query(`COMMIT`)
+        return{
+            player: finalUpdateIgn.rows[0],
+            audit: finalAuditLog.rows[0]
+        }
+    } catch  (error) {
+        await client.query(`ROLLBACK`)
+        throw error
+    } finally {
+        client.release()
+    }
+}
