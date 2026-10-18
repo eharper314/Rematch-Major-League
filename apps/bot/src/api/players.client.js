@@ -27,3 +27,26 @@ export async function registerPlayer(discordUserId, inGameName) {
         data,
     };
 }
+
+export async function updateIgn(discordUserId, inGameName) {
+    const response = await fetch(new URL("/players",apiUrl), {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            discordUserId,
+            inGameName,
+        }),
+        signal: AbortSignal.timeout(10_000),
+    });
+
+    const data = await response.json();
+
+    return {
+        ok: response.ok,
+        status: response.status,
+        data,
+    };
+}
