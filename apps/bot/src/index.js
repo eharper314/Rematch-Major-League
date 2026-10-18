@@ -30,14 +30,22 @@ bot.on(Events.InteractionCreate, async (interaction) => {
     
     if (interaction.isButton()) {
         if (interaction.customId.startsWith("registration:")) {
-            await handleRegistrationButtons(interaction);
+            try {
+                await handleRegistrationButtons(interaction);
+            } catch (error) {
+                console.error(`Failed to execute the Modal call: `, error);
+            }
             return;
         }
     }
 
     if (interaction.isModalSubmit()) {
         if(interaction.customId.startsWith("registration:")) {
-            await handleRegistrationModalSubmit(interaction);
+            try {
+                await handleRegistrationModalSubmit(interaction);
+            } catch (error) {
+                console.error(`Failed to execute the Modal submission: `, error);
+            }
             return;
         }
     }
@@ -55,7 +63,7 @@ bot.on(Events.InteractionCreate, async (interaction) => {
     try {
         await command.execute(interaction);
     } catch (error) {
-        console.error(`Failed to execute /${interaction.commandNmae}: `, error);
+        console.error(`Failed to execute /${interaction.commandName}: `, error);
     }
 });
 

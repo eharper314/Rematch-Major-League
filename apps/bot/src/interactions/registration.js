@@ -5,7 +5,7 @@ import {
     TextInputStyle,
     MessageFlags
 } from "discord.js";
-import {registerPlayer} from "../api/players.client.js";
+import {registerPlayer, updateIgn} from "../api/players.client.js";
 
 
 const registeredRoleId = process.env.REGISTERED_ROLE_ID;
@@ -39,7 +39,7 @@ function createUpdateIgnModal() {
         .setRequired(true)
     
     const label = new LabelBuilder()
-        .setLabel("In-game name")
+        .setLabel("IGN")
         .setTextInputComponent(input)
     
     return new ModalBuilder()
@@ -73,7 +73,7 @@ export async function handleRegistrationModalSubmit(interaction) {
         try {
             result = await registerPlayer(interaction.user.id, inGameName);
         } catch (error) {
-            console.log("Registration API request failed: ", error);
+            console.error("Registration API request failed: ", error);
 
             await interaction.editReply({
                 content: "I couldn't confirm your registration. " +
@@ -135,11 +135,71 @@ export async function handleRegistrationModalSubmit(interaction) {
             flags: MessageFlags.Ephemeral,
         });
 
-        const inGameName = interaction.fields.getTextInputValue("in-game-name");
+        const inGameName = interaction.fields.getTextInputValue("update-ign");
 
-        const result = await registerPlayer(interaction.user.id, inGameName);
+        let result;
 
-        //API Handling etc
+        try {
+            result = await updateIgn(interaction.user.id, inGameName);
+        } catch (error) {
+            console.error("Update IGN API request failed: ", error);
+
+            await interaction.editReply({
+                content: "I couldn't confirm your name update. " +
+                "It may have completed, please contact staff before retrying.",
+            });
+            return;
+        }
+
+        if (!result.ok) {
+            let message = "IGN updating is unavailable at this time. Please try again later.";
+
+            if (result.status === 400) {
+                message = result.data.error;
+            }
+
+            if (result.status === 404) {
+                message = "You are not registered with RML! Please use the Register button.";
+            }
+            
+            if (result.status === 409) {
+                if (result.data.code === "IGN_COOLDOWN") {
+                    const allowedUpdateIgn = new Date(result.data.nextAllowedAt);
+                    const updateTimestamp = Math.floor(allowedUpdateIgn.getTime() / 1000);
+                    message = `You can't update your IGN until <t:${updateTimestamp}:R>`;
+                } else {
+                message = "That IGN is already registered. ";
+                }
+            }
+
+            await interaction.editReply({content: message});
+            return;
+        }
+
+        try {
+
+            const member = await interaction.guild.members.fetch(interaction.user.id);
+
+            await member.setNickname(
+                result.data.player.in_game_name,
+                "Updated nickname to registered RML IGN"
+            );
+
+        } catch (error) {
+            console.error("Updating name request failed: ", error);
+
+            await interaction.editReply({
+                content: 
+                "Your name got updated, but I couldn't finish " +
+                "updating your nickname. Please contact staff; " + 
+                "you don't need to try again.",
+            });
+            return;
+        }
+        
+        await interaction.editReply({
+            content: "Your name has been updated, and your display name synced!",
+        });
     }
 
 }
