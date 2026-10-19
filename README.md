@@ -24,7 +24,7 @@ There are three command level clearances:
 * TBD
 
 <u>**Staff:**</u>
-* /update-ign player: ___ ign: ____ reason: ____
+* /update-ign player: ____ ign: ____ reason: ____
 
 <u>**General:**</u>
 * TBD
