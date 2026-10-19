@@ -181,7 +181,7 @@ export async function handleRegistrationModalSubmit(interaction) {
             const member = await interaction.guild.members.fetch(interaction.user.id);
 
             await member.setNickname(
-                result.data.player.in_game_name,
+                result.player.in_game_name,
                 "Updated nickname to registered RML IGN"
             );
 

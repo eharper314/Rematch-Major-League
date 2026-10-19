@@ -203,8 +203,7 @@ playersRouter.patch("/adminIgn", authenticateBot, async (request, response) => {
   // Attempt writing
   try {
     const updateIgn = await staffUpdateIgnOverride(staffMember, targetPlayer, normalizedName, trimReason);
-
-    return response.status(200).json({updateIgn});
+    return response.status(200).json(updateIgn);
 
   } catch (error) {
     if (error.code === "NONEXISTENT_PLAYER") {
