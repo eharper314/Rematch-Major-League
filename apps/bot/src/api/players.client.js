@@ -50,3 +50,28 @@ export async function updateIgn(discordUserId, inGameName) {
         data,
     };
 }
+
+export async function staffUpdateIgn(staffMember, discordUserId, inGameName, reason) {
+    const response = await fetch(new URL("/players/adminIgn",apiUrl), {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            staffMember: staffMember,
+            targetPlayer: discordUserId,
+            newIgn: inGameName,
+            reason: reason,
+        }),
+        signal: AbortSignal.timeout(10_000),
+    });
+
+    const data = await response.json();
+
+    return {
+        ok: response.ok,
+        status: response.status,
+        data,
+    };
+}
