@@ -4,6 +4,7 @@ import {
 
  } from "discord.js";
 import {staffUpdateIgn} from "../../api/players.client.js";
+import {publishAudit} from "../../audit/publish-audit.js";    
 
 const adminRoleId = process.env.ADMIN_ROLE_ID;
 const staffRoleId = process.env.STAFF_ROLE_ID;
@@ -75,7 +76,7 @@ export async function execute(interaction) {
         console.error("Staff override failed: ", error);
 
         await interaction.editReply({
-            content: "I couldn't finish the update. Please let Vibe know.",
+            content: "I couldn't confirm if the update finished. Please let Vibe know.",
         });
         
         return;
@@ -99,6 +100,13 @@ export async function execute(interaction) {
         await interaction.editReply({content: message});
         return;
     }
+
+    try {
+        await publishAudit(interaction.client, result.data.audit, result.data.player);
+    } catch (error) {
+        console.error("Audit send failed: ", error);
+    }
+
     try {
 
         const member = await interaction.guild.members.fetch(targetPlayer);
@@ -121,5 +129,4 @@ export async function execute(interaction) {
     await interaction.editReply({
         content: "Display name has been synced.",
     });
-
 }
