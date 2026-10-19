@@ -21,7 +21,7 @@ The RML discord bot is made to handle daily operations in the [RML Official Disc
 There are three command level clearances:
 
 <u>**Admin:**</u>
-* TBD
+* /setup-registration
 
 <u>**Staff:**</u>
 * /update-ign player: ____ ign: ____ reason: ____
