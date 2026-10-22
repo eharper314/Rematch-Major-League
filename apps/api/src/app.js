@@ -1,5 +1,6 @@
 import express from "express";
 import {playersRouter} from "./features/players/players.routes.js";
+import {teamsRouter} from "./features/teams/teams.routes.js"; 
 
 export const app = express();
 
@@ -10,3 +11,5 @@ app.get("/health", (request, response) => {
 app.use(express.json({limit: "16kb"}));
 
 app.use("/players", playersRouter);
+
+app.use("/teams", teamsRouter);
