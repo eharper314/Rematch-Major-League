@@ -106,7 +106,7 @@ export async function patchRoleForumId(teamId, discordRoleId, forumPostId) {
 
         const findTeam = `SELECT team_id, team_discord_role_id, team_thread_id, updated_at FROM teams WHERE team_id = $1 FOR NO KEY UPDATE`
 
-        const targetTeamId = client.query(findTeam, [teamId])
+        const targetTeamId = await client.query(findTeam, [teamId])
 
         if (targetTeamId.rows[0] === undefined) {
             const error = new Error("Team does not exist.");
@@ -120,7 +120,7 @@ export async function patchRoleForumId(teamId, discordRoleId, forumPostId) {
         WHERE team_id = $1
         RETURNING team_id, team_discord_role_id, team_thread_id`
 
-        const finalPatchTeam = client.query(patchTeam, [targetTeam, discordRoleId, forumPostId])
+        const finalPatchTeam = await client.query(patchTeam, [targetTeam, discordRoleId, forumPostId])
 
         await client.query(`COMMIT`)
         return {

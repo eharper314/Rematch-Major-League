@@ -159,7 +159,7 @@ teamsRouter.patch("/", authenticateBot, async (request, response) => {
 
     try {
         const patchTeam = await patchRoleForumId(teamId, discordRoleId, forumPostId);
-        return response.status(200).json({patchTeam});
+        return response.status(200).json(patchTeam);
     } catch (error) {
         if (error.code === "NONEXISTENT_TEAM") {
             return response.status(404).json({
