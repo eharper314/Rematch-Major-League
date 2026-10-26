@@ -2,6 +2,7 @@ import {Client, Events, GatewayIntentBits} from "discord.js";
 import {loadCommands} from "./load-commands.js";
 import {registerCommands} from "./register-commands.js";
 import {handleRegistrationButtons, handleRegistrationModalSubmit} from "./interactions/registration.js";
+import {handleTeamCreationButtons, handleTeamCreationModalSubmit, handleTeamCreationSubmitButtons} from "./interactions/team-creation.js";    
 
 
 const botToken = process.env.DISCORD_BOT_TOKEN;
@@ -37,12 +38,39 @@ bot.on(Events.InteractionCreate, async (interaction) => {
             }
             return;
         }
+
+        if (interaction.customId.startsWith("teamCreation:")) {
+            try {
+                await handleTeamCreationButtons(interaction);
+            } catch (error) {
+                console.error(`Failed to execute the Modal call: `, error);
+            }
+            return;
+        }
+
+        if (interaction.customId.startsWith("finalTeamCreation:")) {
+            try {
+                await handleTeamCreationSubmitButtons(interaction);
+            } catch (error) {
+                console.error(`Failed to execute the team creation submission: `, error);
+            }
+            return;
+        }
     }
 
     if (interaction.isModalSubmit()) {
-        if(interaction.customId.startsWith("registration:")) {
+        if (interaction.customId.startsWith("registration:")) {
             try {
                 await handleRegistrationModalSubmit(interaction);
+            } catch (error) {
+                console.error(`Failed to execute the Modal submission: `, error);
+            }
+            return;
+        }
+
+        if (interaction.customId.startsWith("teamCreation:")) {
+            try {
+                await handleTeamCreationModalSubmit(interaction);
             } catch (error) {
                 console.error(`Failed to execute the Modal submission: `, error);
             }

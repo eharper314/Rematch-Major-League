@@ -24,7 +24,7 @@ teamsRouter.post("/", authenticateBot, async (request, response) => {
     });
     }
 
-    if ((staffMember)) {
+    if ((!staffMember)) {
         return response.status(400).json({
             error: "Staff ID is in an invalid format.",
         });

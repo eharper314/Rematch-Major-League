@@ -59,7 +59,7 @@ export async function execute(interaction) {
 
     if (!staffMember.roles.cache.has(adminRoleId) && !staffMember.roles.cache.has(staffRoleId)) {
         return interaction.reply({
-            content: "You do not have permission running this command.",
+            content: "You do not have permission to run this command.",
             flags: MessageFlags.Ephemeral,
         });
     }

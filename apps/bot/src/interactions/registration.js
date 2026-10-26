@@ -86,7 +86,7 @@ export async function handleRegistrationModalSubmit(interaction) {
             let message = "Registration is unavailable at this time. Please try again later.";
 
             if (result.status === 400) {
-            message = result.data.error;
+                message = result.data.error;
             }
 
             if (result.status === 409) {

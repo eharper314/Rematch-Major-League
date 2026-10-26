@@ -116,7 +116,7 @@ export async function patchRoleForumId(teamId, discordRoleId, forumPostId) {
 
         const targetTeam = targetTeamId.rows[0].team_id
 
-        const patchTeam = `UPDATE teams SET team_discord_role_id = $2, team_thread_id = $3
+        const patchTeam = `UPDATE public.teams SET team_discord_role_id = $2, team_thread_id = $3, updated_at = CURRENT_TIMESTAMP
         WHERE team_id = $1
         RETURNING team_id, team_discord_role_id, team_thread_id`
 
