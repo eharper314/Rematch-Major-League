@@ -1,6 +1,6 @@
 import {Router} from "express";
 import {authenticateBot} from "../../middleware/authenticate-bot.js";
-import {createTeam} from "./teams.repository.js";
+import {createTeam, patchRoleForumId} from "./teams.repository.js";
 
 export const teamsRouter = Router();
 
@@ -24,7 +24,7 @@ teamsRouter.post("/", authenticateBot, async (request, response) => {
     });
     }
 
-    if (!/^[0-9]{17,20}$/.test(staffMember)) {
+    if ((staffMember)) {
         return response.status(400).json({
             error: "Staff ID is in an invalid format.",
         });
@@ -138,3 +138,40 @@ teamsRouter.post("/", authenticateBot, async (request, response) => {
     }
 });
 
+teamsRouter.patch("/", authenticateBot, async (request, response) => {
+    const {
+        teamId,
+        discordRoleId,
+        forumPostId,
+    } = request.body ?? {};
+    
+    if (!/^[0-9]{17,20}$/.test(discordRoleId)) {
+        return response.status(400).json({
+            error: "Discord Role ID not set up correctly.",
+        });
+    }
+
+    if (!/^[0-9]{17,20}$/.test(forumPostId)) {
+        return response.status(400).json({
+            error: "Forum channel ID not set up correctly.",
+        });
+    }
+
+    try {
+        const patchTeam = await patchRoleForumId(teamId, discordRoleId, forumPostId);
+        return response.status(200).json({patchTeam});
+    } catch (error) {
+        if (error.code === "NONEXISTENT_TEAM") {
+            return response.status(404).json({
+                error: error.message
+            });
+        }
+
+        console.error("Team patching failed: ", error);
+
+        return response.status(500).json({
+            error: "Can't create team.",
+        });
+    }
+
+});

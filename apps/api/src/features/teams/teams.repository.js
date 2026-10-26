@@ -98,3 +98,40 @@ export async function createTeam(staffMember, teamName, teamManager, primaryColo
     }
 }
 
+export async function patchRoleForumId(teamId, discordRoleId, forumPostId) {
+    const client = await pool.connect();
+
+    try {
+        await client.query(`BEGIN`)
+
+        const findTeam = `SELECT team_id, team_discord_role_id, team_thread_id, updated_at FROM teams WHERE team_id = $1 FOR NO KEY UPDATE`
+
+        const targetTeamId = client.query(findTeam, [teamId])
+
+        if (targetTeamId.rows[0] === undefined) {
+            const error = new Error("Team does not exist.");
+            error.code = "NONEXISTENT_TEAM";
+            throw error;
+        }
+
+        const targetTeam = targetTeamId.rows[0].team_id
+
+        const patchTeam = `UPDATE teams SET team_discord_role_id = $2, team_thread_id = $3
+        WHERE team_id = $1
+        RETURNING team_id, team_discord_role_id, team_thread_id`
+
+        const finalPatchTeam = client.query(patchTeam, [targetTeam, discordRoleId, forumPostId])
+
+        await client.query(`COMMIT`)
+        return {
+            team: finalPatchTeam.rows[0].team_id,
+            discord: finalPatchTeam.rows[0].team_discord_role_id,
+            forum: finalPatchTeam.rows[0].team_thread_id
+        }
+    } catch (error) {
+        await client.query(`ROLLBACK`)
+        throw error
+    } finally {
+        client.release()
+    }
+}
