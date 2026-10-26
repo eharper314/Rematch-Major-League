@@ -4,7 +4,7 @@ import {
 
  } from "discord.js";
 import {staffUpdateIgn} from "../../api/players.client.js";
-import {publishAudit} from "../../audit/publish-audit.js";    
+import {publishPlayerAudit} from "../../audit/publish-audit.js";    
 
 const adminRoleId = process.env.ADMIN_ROLE_ID;
 const staffRoleId = process.env.STAFF_ROLE_ID;
@@ -102,7 +102,7 @@ export async function execute(interaction) {
     }
 
     try {
-        await publishAudit(interaction.client, result.data.audit, result.data.player);
+        await publishPlayerAudit(interaction.client, result.data.audit, result.data.player);
     } catch (error) {
         console.error("Audit send failed: ", error);
     }

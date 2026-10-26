@@ -11,6 +11,7 @@ import {
 
 import {teamDrafts} from "../states/draft-exports.js";    
 import {createTeam, patchRoleForumId} from "../api/teams.client.js";
+import {publishTeamAudit} from "../audit/publish-audit.js";
 
 const registeredRoleId = process.env.REGISTERED_ROLE_ID;
 const staffRoleId = process.env.STAFF_ROLE_ID;
@@ -549,6 +550,12 @@ export async function handleTeamCreationSubmitButtons(interaction) {
             embeds: [],
             components: [],
         });
+
+        try {
+            await publishTeamAudit(interaction.client, result.data.audit, patchResult.data.discord);
+        } catch (error) {
+            console.error("Audit send failed: ", error);
+        }
         teamDrafts.delete(draftId);
     }
 }

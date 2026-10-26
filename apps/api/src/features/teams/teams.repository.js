@@ -135,3 +135,62 @@ export async function patchRoleForumId(teamId, discordRoleId, forumPostId) {
         client.release()
     }
 }
+
+export async function addTeamLogo(staffMember, teamId, teamLogoUrl) {
+    const client = await pool.connect();
+
+    try {
+        await client.query(`BEGIN`);
+
+        const findTeam = `SELECT team_id, team_name, team_logo_url, team_thread_id, team_discord_role_id, updated_at FROM teams WHERE team_id = $1 FOR NO KEY UPDATE`
+
+        const targetTeamId = await client.query(findTeam, [teamId])
+
+        if (targetTeamId.rows[0] === undefined) {
+            const error = new Error("Team does not exist.");
+            error.code = "NONEXISTENT_TEAM";
+            throw error;
+        }
+
+        const targetTeam = targetTeamId.rows[0].team_id
+        const teamName = targetTeamId.rows[0].team_name
+        const currentTeamLogo = targetTeamId.rows[0].team_logo_url
+
+        const addLogoToTeam = `UPDATE public.teams SET team_logo_url = $2, updated_at = CURRENT_TIMESTAMP WHERE team_id = $1 
+        RETURNING team_id, team_name, team_logo_url, team_thread_id, team_discord_role_id, updated_at`
+
+        const logoAdded = await client.query(addLogoToTeam, [targetTeam, teamLogoUrl])
+
+
+        const addAuditLog = 
+        `INSERT INTO public.audit_logs (action, actor_discord_user_id, 
+        target_type, target_id, changes, reason)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING audit_id, action, actor_discord_user_id, target_id, changes, reason, created_at`
+
+        const finalAuditLog = await client.query(addAuditLog, [
+            "team.add_logo",
+            staffMember,
+            "team",
+            targetTeam,
+            {
+                "team": teamName,
+                "before": currentTeamLogo,
+                "after": logoAdded.rows[0].team_logo_url,
+            },
+            "Adding/updating team logo."
+        ])
+
+        await client.query(`COMMIT`)
+        return {
+            team: logoAdded.rows[0].team_discord_role_id,
+            audit: finalAuditLog.rows[0],
+        }
+
+    } catch (error) {
+        await client.query(`ROLLBACK`)
+        throw error
+    } finally {
+        client.release()
+    }
+}

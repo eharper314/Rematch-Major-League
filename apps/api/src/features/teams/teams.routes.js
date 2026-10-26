@@ -1,6 +1,6 @@
 import {Router} from "express";
 import {authenticateBot} from "../../middleware/authenticate-bot.js";
-import {createTeam, patchRoleForumId} from "./teams.repository.js";
+import {createTeam, patchRoleForumId, addTeamLogo} from "./teams.repository.js";
 
 export const teamsRouter = Router();
 
@@ -175,3 +175,28 @@ teamsRouter.patch("/", authenticateBot, async (request, response) => {
     }
 
 });
+
+teamsRouter.patch("/logo", authenticateBot, async (request, response) => {
+    const {
+        staffMember,
+        teamId,
+        teamLogoUrl,
+    } = request.body ?? {};
+
+    try {
+        const addLogo = await addTeamLogo(staffMember, teamId, teamLogoUrl);
+        return response.status(200).json(addLogo);
+    } catch (error) {
+        if (error.code === "NONEXISTENT_TEAM") {
+            return response.status(404).json({
+                error: error.message
+            });
+        }
+
+        console.error("Logo addition failed: ", error);
+
+        return response.status(500).json({
+            error: "Can't add logo to team.",
+        });
+    }
+})
